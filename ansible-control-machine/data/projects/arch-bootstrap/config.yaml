@@ -1,0 +1,15 @@
+scm:
+    type: git
+    repository: https://github.com/pardegerman/arch-bootstrap
+    rev: main
+
+steps:
+    - name: Some action before playbooks
+      cmd: echo "**** placeholder, steps ****"
+
+playbooks:
+    - name: main 
+      path: main.yml
+      inventories:
+          - name: homelab
+            path: inventories/homelab

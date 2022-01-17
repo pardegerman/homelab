@@ -1,0 +1,21 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-alpine-node:latest
+
+RUN install_packages openssh git rsync ansible
+WORKDIR /var/nci-ansible-ui
+
+COPY package.json .
+COPY package-lock.json .
+RUN npm ci --only=prod && \
+    ansible --version >> dependencies-info.txt && \
+    echo "nodejs: `node --version`" >> dependencies-info.txt && \
+    echo "npm:packages" >> dependencies.txt && \
+    npm ls --prod --depth=0 | tail -n +2 >> dependencies-info.txt;
+
+COPY entrypoint.sh /entrypoint.sh
+
+RUN adduser --disabled-password ansible
+COPY data data/
+RUN chown -R ansible data 
+
+USER ansible
+ENTRYPOINT ["/entrypoint.sh"]

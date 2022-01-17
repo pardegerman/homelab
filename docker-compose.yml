@@ -1,0 +1,41 @@
+version: '2'
+volumes:
+  op-connect-credentials:
+  op-connect-data:
+  ansible-data:
+
+services:
+  op-connect-api:
+    image: 1password/connect-api:latest
+    ports: 
+      - "8080:8080"
+    volumes:
+      - 'op-connect-data:/home/opuser/.op/data'
+    depends_on:
+      - op-connect-sync
+
+  op-connect-sync:
+    image: 1password/connect-sync:latest
+    volumes:
+      - 'op-connect-credentials:/home/opuser/.op'
+      - 'op-connect-data:/home/opuser/.op/data'
+    depends_on:
+      - op-credential-uploader
+
+  op-credential-uploader:
+    build: ./credential-uploader
+    environment:
+      - DIR=/op
+    ports:
+      - "8888:8080"
+    volumes: 
+      - 'op-connect-credentials:/op'
+
+  ansible-control:
+    build: ./ansible-control-machine
+    ports:
+      - "3000:3000"
+    volumes:
+      - 'ansible-data:/var/nci-ansible-ui/data'
+    labels:
+      io.balena.features.supervisor-api: '1'
